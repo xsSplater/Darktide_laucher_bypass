@@ -8,10 +8,12 @@ mode con cols=100 lines=30
 
 set SteamAppId=1361210
 
+REM Получаем абсолютный путь к папке, где находится скрипт
+set "game_root=%~dp0"
+set "game_root=%game_root:~0,-1%"
+
 REM Проверяем корректность расположения скрипта
-set "script_dir=%~dp0"
-set "script_dir=%script_dir:~0,-1%"
-for %%A in ("%script_dir%") do set "parent_folder=%%~nxA"
+for %%A in ("%game_root%") do set "parent_folder=%%~nxA"
 
 if /i "!parent_folder!"=="content" (
 	echo ОШИБКА: Скрипт не должен находиться в папке 'content'^!
@@ -23,10 +25,10 @@ if /i "!parent_folder!"=="content" (
 REM Проверяем, какая версия игры установлена
 if exist "content\" (
 	set Version=Xbox
-	echo XBOX
+	echo Обнаружена XBOX версия
 ) else if exist "binaries\" (
 	set Version=Steam
-	echo STEAM
+	echo Обнаружена STEAM версия
 ) else (
 	echo Ошибка: Не найдены папки 'Content' ^(Xbox^) или 'binaries' ^(Steam^)^!
 	echo Переместите этот батник в папку c игрой. Обычно ^"Warhammer 40,000 DARKTIDE^"
@@ -53,10 +55,24 @@ if "!Version!"=="Steam" (
 	)
 	
 	echo Запуск Steam-версии...
-	start "" /wait "binaries\Darktide.exe" --bundle-dir ../bundle --ini settings --backend-auth-service-url https://bsp-auth-prod.atoma.cloud --backend-title-service-url https://bsp-td-prod.atoma.cloud --lua-heap-mb-size 2048
+	set "exe_path=%game_root%\binaries\Darktide.exe"
+	if exist "!exe_path!" (
+		start "" /wait "!exe_path!" --bundle-dir ../bundle --ini settings --backend-auth-service-url https://bsp-auth-prod.atoma.cloud --backend-title-service-url https://bsp-td-prod.atoma.cloud --lua-heap-mb-size 2048
+	) else (
+		echo Ошибка: Файл не найден - !exe_path!
+		pause
+		exit /b 1
+	)
 ) else if "!Version!"=="Xbox" (
 	echo Запуск Xbox-версии...
-	start "" /wait "content\binaries\Darktide.exe" --bundle-dir ../bundle --ini settings --backend-auth-service-url https://bsp-auth-prod.atoma.cloud --backend-title-service-url https://bsp-td-prod.atoma.cloud --lua-heap-mb-size 2048
+	set "exe_path=%game_root%\content\binaries\Darktide.exe"
+	if exist "!exe_path!" (
+		start "" /wait "!exe_path!" --bundle-dir ../bundle --ini settings --backend-auth-service-url https://bsp-auth-prod.atoma.cloud --backend-title-service-url https://bsp-td-prod.atoma.cloud --lua-heap-mb-size 2048
+	) else (
+		echo Ошибка: Файл не найден - !exe_path!
+		pause
+		exit /b 1
+	)
 )
 
 echo Игра закрыта. Это окно закроется через 2 секунды...

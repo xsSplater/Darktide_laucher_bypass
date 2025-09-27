@@ -8,10 +8,12 @@ mode con cols=100 lines=30
 
 set SteamAppId=1361210
 
+REM Get the absolute path to the folder where the script is located
+set "game_root=%~dp0"
+set "game_root=%game_root:~0,-1%"
+
 REM Checking the correctness of the script location
-set "script_dir=%~dp0"
-set "script_dir=%script_dir:~0,-1%"
-for %%A in ("%script_dir%") do set "parent_folder=%%~nxA"
+for %%A in ("%game_root%") do set "parent_folder=%%~nxA"
 
 if /i "!parent_folder!"=="content" (
 	echo ERROR: Script must not be in the 'Content' folder^!
@@ -23,10 +25,10 @@ if /i "!parent_folder!"=="content" (
 REM Checking what version of the game is installed
 if exist "content\" (
 	set Version=Xbox
-	echo XBOX
+	echo XBOX version found
 ) else if exist "binaries\" (
 	set Version=Steam
-	echo STEAM
+	echo STEAM version found
 ) else (
 	echo Error: No 'Content' ^(Xbox^) or 'binaries' ^(Steam^)^ folders found!
 	echo Move this batch file to the game folder. Usually ^"Warhammer 40,000 DARKTIDE^"
@@ -53,10 +55,24 @@ if "!Version!"=="Steam" (
 	)
 	
 	echo Launching Steam version...
-	start "" /wait "binaries\Darktide.exe" --bundle-dir ../bundle --ini settings --backend-auth-service-url https://bsp-auth-prod.atoma.cloud --backend-title-service-url https://bsp-td-prod.atoma.cloud --lua-heap-mb-size 2048
+	set "exe_path=%game_root%\binaries\Darktide.exe"
+	if exist "!exe_path!" (
+		start "" /wait "!exe_path!" --bundle-dir ../bundle --ini settings --backend-auth-service-url https://bsp-auth-prod.atoma.cloud --backend-title-service-url https://bsp-td-prod.atoma.cloud --lua-heap-mb-size 2048
+	) else (
+		echo Error: File not found - !exe_path!
+		pause
+		exit /b 1
+	)
 ) else if "!Version!"=="Xbox" (
-	echo Launching Xbox version...
-	start "" /wait "content\binaries\Darktide.exe" --bundle-dir ../bundle --ini settings --backend-auth-service-url https://bsp-auth-prod.atoma.cloud --backend-title-service-url https://bsp-td-prod.atoma.cloud --lua-heap-mb-size 2048
+	echo Launching the Xbox version...
+	set "exe_path=%game_root%\content\binaries\Darktide.exe"
+	if exist "!exe_path!" (
+		start "" /wait "!exe_path!" --bundle-dir ../bundle --ini settings --backend-auth-service-url https://bsp-auth-prod.atoma.cloud --backend-title-service-url https://bsp-td-prod.atoma.cloud --lua-heap-mb-size 2048
+	) else (
+		echo Error: File not found - !exe_path!
+		pause
+		exit /b 1
+	)
 )
 
 echo Game closed. This window will close in 2 seconds...
