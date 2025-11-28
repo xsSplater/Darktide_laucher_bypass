@@ -79,9 +79,6 @@ if "!LANGUAGE!"=="ru" (
 	set "MSG_GAME_CLOSED=Game closed. This window will close in 2 seconds..."
 )
 
-mode con cols=100 lines=30
-
-set SteamAppId=1361210
 
 REM Get the absolute path to the folder where the script is located
 set "game_root=%~dp0"
@@ -111,6 +108,7 @@ if exist "content\" (
 	exit /b 1
 )
 
+
 :check_running
 REM Check if the game is already running
 tasklist /FI "IMAGENAME eq Darktide.exe" 2>NUL | find /I "Darktide.exe" >NUL
@@ -121,6 +119,11 @@ if %errorlevel% equ 0 (
 )
 
 if "!Version!"=="Steam" (
+	REM Create a steam_appid.txt file with the Steam game code "1361210" to get rid of the Backend error.
+	if not exist "%game_root%\binaries\steam_appid.txt" (
+		echo 1361210> "%game_root%\binaries\steam_appid.txt"
+	)
+	
 	REM Check if Steam is running
 	tasklist /FI "IMAGENAME eq steam.exe" 2>NUL | find /I "steam.exe" >NUL
 	if errorlevel 1 (
